@@ -94,7 +94,7 @@ export class Styler {
   columnStyles: { [key: string]: Omit<Column, 'key'> }
   colorScheme: string
 
-  constructor(columns: Column[], scheme = 'Paired') {
+  constructor (columns: Column[], scheme = 'Paired') {
     this.columnStyles = {}
     columns.forEach((column) => {
       const { key, ...style } = column
@@ -113,7 +113,7 @@ export class Styler {
     this.colorScheme = scheme
   }
 
-  numColumns() {
+  numColumns () {
     return this.columnNames.length
   }
 
@@ -126,7 +126,7 @@ export class Styler {
    * @param  {number} columnCount The number of columns to apply the scheme to
    * @return {array}              An array with the scheme colors in it.
    */
-  colorLookup(columnCount: number) {
+  colorLookup (columnCount: number) {
     const colorSchemeKeys = _.keys(colorbrewer[this.colorScheme])
     const minSchemeSize = _.min(colorSchemeKeys)
     const maxSchemeSize = _.max(colorSchemeKeys)
@@ -140,7 +140,7 @@ export class Styler {
 
   /**
    */
-  legendStyle(column: string, type: string) {
+  legendStyle (column: string, type: string) {
     const numColumns = this.numColumns()
     const colorLookup = this.colorLookup(numColumns)
     const i = _.indexOf(this.columnNames, column)
@@ -202,7 +202,7 @@ export class Styler {
     return legendStyle
   }
 
-  areaChartStyle() {
+  areaChartStyle () {
     const style: {
       [key: string]: ShapeStyle
     } = {}
@@ -256,7 +256,7 @@ export class Styler {
     return style
   }
 
-  lineChartStyle() {
+  lineChartStyle () {
     const numColumns = this.numColumns()
     const colorLookup = this.colorLookup(numColumns)
     const style: { [key in string]: StyleVariants } = {}
@@ -290,7 +290,7 @@ export class Styler {
     return style
   }
 
-  barChartStyle() {
+  barChartStyle () {
     const numColumns = this.numColumns()
     const colorLookup = this.colorLookup(numColumns)
     const style: { [key in string]: StyleVariants } = {}
@@ -313,7 +313,7 @@ export class Styler {
     return style
   }
 
-  scatterChartStyle() {
+  scatterChartStyle () {
     const numColumns = this.numColumns()
     const colorLookup = this.colorLookup(numColumns)
     const style: { [key in string]: StyleVariants } = {}
@@ -336,7 +336,7 @@ export class Styler {
     return style
   }
 
-  axisStyle(column) {
+  axisStyle (column: string) {
     const numColumns = this.numColumns()
     const colorLookup = this.colorLookup(numColumns)
     const i = _.indexOf(this.columnNames, column)
@@ -350,7 +350,7 @@ export class Styler {
     }
   }
 
-  boxChartStyle() {
+  boxChartStyle () {
     const style: { [key in string]: StyleVariants[] } = {}
 
     const numColumns = this.numColumns()
@@ -393,6 +393,6 @@ export class Styler {
   }
 }
 
-export default function styler(columns: Column[], scheme: string) {
+export default function styler (columns: Column[], scheme: string) {
   return new Styler(columns, scheme)
 }
