@@ -1,9 +1,5 @@
 import BigNumber from 'bignumber.js'
-
-type OrgDataType = {
-  timestamp: string
-  value: string
-}
+import { OrgDataType } from './types'
 
 type DataType = {
   timestamp: Date

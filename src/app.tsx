@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { TimeSeries } from 'pondjs'
 import {
   Resizable,
@@ -14,26 +14,46 @@ import moment from 'moment'
 import BigNumber from 'bignumber.js'
 import { format } from 'd3-format'
 import _ from 'underscore'
+import Select, { SingleValue } from 'react-select'
 
 import CrossHairs from './crosshairs'
 import processData from './processor'
 
 import floorsData from './boredapeyachtclub.json'
 import useDebouncedEffect from './useDebouncedEffect'
+import { OrgDataType } from './types'
 
 const styles = styler([
   { key: 'floor', color: 'red', width: 1 },
   { key: 'twap4', color: '#00f0ff', width: 1 },
 ])
 
-export const App = () => {
+const options = [
+  { label: 'BAYC', value: 'boredapeyachtclub' },
+  { label: 'MAYC', value: 'mutant-ape-yacht-club' },
+  { label: 'Moonbirds', value: 'proof-moonbirds' },
+  { label: 'Doodles', value: 'doodles-official' },
+  { label: 'Azuki', value: 'azuki' },
+  { label: 'BAKC', value: 'bored-ape-kennel-club' },
+  { label: 'Chromie Squiggle', value: 'chromie-squiggle-by-snowfro' },
+  { label: 'Clonex', value: 'clonex' },
+  { label: 'Cryptoadz', value: 'cryptoadz-by-gremplin' },
+  { label: 'Digidaigaku', value: 'digidaigaku' },
+  { label: 'Meebits', value: 'meebits' },
+  { label: 'Otherdeed', value: 'otherdeed' },
+]
+
+const Graph = ({ data }: any) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(200)
 
-  const [floors, setFloors] = useState<any>(null)
-  const [twaps4, setTwaps4] = useState<any>(null)
+  const [floors, twaps4, initialTimeRange] = data ?? []
+  const [timerange, setTimerange] = useState<any>(initialTimeRange)
 
-  const [timerange, setTimerange] = useState<any>(null)
+  useEffect(() => {
+    setTimerange(initialTimeRange)
+  }, [initialTimeRange])
+
   const [highlight, setHighlight] = useState(null)
   const [selection, setSelection] = useState(null)
   const [tracker, setTracker] = useState(null)
@@ -41,50 +61,16 @@ export const App = () => {
 
   useDebouncedEffect(
     () => {
-      setMin(floors.crop(timerange).min('floor', undefined))
-      setMax(floors.crop(timerange).max('floor', undefined))
+      if (floors) {
+        setMin(floors.crop(timerange).min('floor'))
+        setMax(floors.crop(timerange).max('floor'))
+      }
     },
     [floors, timerange],
     300,
   )
 
-  useEffect(() => {
-    // fetch('./boredapeyachtclub.json')
-    //   .then((response) => response.json())
-    //   .then((floorsData) => {
-    const [, twap4] = processData(floorsData)
-    const points = floorsData.map((e) => [
-      moment(e.timestamp).valueOf(),
-      new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
-    ])
-    setFloors(
-      new TimeSeries({
-        name: 'Sales',
-        columns: ['time', 'floor'],
-        points,
-      }),
-    )
-
-    setTwaps4(
-      new TimeSeries({
-        name: 'Sales',
-        columns: ['time', 'twap4'],
-        points: twap4.map((e) => [
-          moment(e.timestamp).valueOf(),
-          new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
-        ]),
-      }),
-    )
-    // })
-  }, [])
-
-  useEffect(() => {
-    if (floors) {
-      setTimerange(floors.timerange())
-    }
-  }, [floors])
-
-  if (!floors || !twaps4 || !timerange) {
+  if (!data || !timerange) {
     return <div>Loading</div>
   }
 
@@ -199,6 +185,75 @@ export const App = () => {
           { key: 'twap4', label: 'Twap 4hrs', value: twap4Value },
         ]}
       />
+    </div>
+  )
+}
+
+export const App = () => {
+  const [selectedOption, setSelectedOption] = useState<
+    SingleValue<{
+      value: string
+      label: string
+    }>
+  >(options[0])
+  const [slug, setSlug] = useState('boredapeyachtclub')
+  const [floorsData, setFloorsData] = useState<OrgDataType[] | null>(null)
+  const handleChangeCollection = (
+    newValue: SingleValue<{
+      value: string
+      label: string
+    }>,
+  ) => {
+    setSelectedOption(newValue)
+    if (newValue?.value) setSlug(newValue?.value)
+  }
+
+  useEffect(() => {
+    setFloorsData(null)
+    fetch(`https://nftperp-oracle.s3.eu-central-1.amazonaws.com/${slug}.json`)
+      .then((response) => response.json())
+      .then((floorsData) => {
+        setFloorsData(floorsData)
+      })
+  }, [slug])
+
+  const data = useMemo(() => {
+    if (!floorsData) return null
+    const [, twap4] = processData(floorsData)
+    const points = floorsData.map((e: OrgDataType) => [
+      moment(e.timestamp).valueOf(),
+      new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
+    ])
+
+    const floorSeries = new TimeSeries({
+      name: 'Sales',
+      columns: ['time', 'floor'],
+      points,
+    })
+    return [
+      floorSeries,
+      new TimeSeries({
+        name: 'Sales',
+        columns: ['time', 'twap4'],
+        points: twap4.map((e) => [
+          moment(e.timestamp).valueOf(),
+          new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
+        ]),
+      }),
+      floorSeries.timerange(),
+    ]
+  }, [floorsData])
+
+  return (
+    <div className='p-10'>
+      <div className='mb-4'>
+        <Select
+          options={options}
+          onChange={handleChangeCollection}
+          value={selectedOption}
+        />
+      </div>
+      <Graph data={data} />
     </div>
   )
 }

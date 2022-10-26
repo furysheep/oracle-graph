@@ -38,6 +38,7 @@
     "pondjs": "^0.8.9",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-select": "^5.5.6",
     "react-test-renderer": "18.2.0",
     "react-timeseries-charts": "esnet/react-timeseries-charts",
     "ts-jest": "29.0.2",
@@ -55,7 +56,10 @@
     "@types/jest": "29.0.3",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
-    "@types/underscore": "^1.11.4"
+    "@types/underscore": "^1.11.4",
+    "autoprefixer": "^10.4.12",
+    "postcss": "^8.4.18",
+    "tailwindcss": "^3.2.1"
   },
   "resolutions": {
     "react-timeseries-charts/moment-duration-format": "^2.3.2"
