@@ -15,6 +15,7 @@ import BigNumber from 'bignumber.js'
 import { format } from 'd3-format'
 import _ from 'underscore'
 import Select, { SingleValue } from 'react-select'
+import { Bars } from 'react-loader-spinner'
 
 import CrossHairs from './crosshairs'
 import processData from './processor'
@@ -70,7 +71,16 @@ const Graph = ({ data }: any) => {
   )
 
   if (!data || !timerange) {
-    return <div>Loading</div>
+    return (
+      <Bars
+        height='80'
+        width='80'
+        color='#4fa94d'
+        ariaLabel='bars-loading'
+        wrapperStyle={{ justifyContent: 'center' }}
+        visible
+      />
+    )
   }
 
   const handleTrackerChanged = (tracker: any) => {
