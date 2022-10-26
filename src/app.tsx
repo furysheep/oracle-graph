@@ -19,7 +19,6 @@ import Select, { SingleValue } from 'react-select'
 import CrossHairs from './crosshairs'
 import processData from './processor'
 
-import floorsData from './boredapeyachtclub.json'
 import useDebouncedEffect from './useDebouncedEffect'
 import { OrgDataType } from './types'
 
@@ -101,14 +100,14 @@ const Graph = ({ data }: any) => {
           timeRange={timerange}
           timeAxisStyle={{
             ticks: {
-              stroke: '#AAA',
+              stroke: '#333',
               opacity: 0.25,
               'stroke-dasharray': '1,1',
               // Note: this isn't in camel case because this is
               // passed into d3's style
             },
             values: {
-              fill: '#AAA',
+              fill: '#000',
               'font-size': 12,
             },
           }}
@@ -137,6 +136,10 @@ const Graph = ({ data }: any) => {
                   'stroke-dasharray': '1,1',
                   // Note: this isn't in camel case because this is
                   // passed into d3's style
+                },
+                values: {
+                  fill: '#000',
+                  'font-size': 12,
                 },
               }}
               showGrid
