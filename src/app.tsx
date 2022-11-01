@@ -41,7 +41,7 @@ const options = [
   { label: 'Digidaigaku', value: 'digidaigaku' },
   { label: 'Meebits', value: 'meebits' },
   { label: 'Otherdeed', value: 'otherdeed' },
-  { label: 'Artgobblers', value: 'artgobblers' },
+  { label: 'Art Gobblers', value: 'artgobblers' },
 ]
 
 const Graph = ({ data }: any) => {
