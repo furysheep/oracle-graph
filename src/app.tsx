@@ -42,6 +42,7 @@ const options = [
   { label: 'Meebits', value: 'meebits' },
   { label: 'Otherdeed', value: 'otherdeed' },
   { label: 'Art Gobblers', value: 'artgobblers' },
+  { label: 'The Saudis', value: 'thesaudis' },
 ]
 
 const Graph = ({ data, slug }: any) => {
