@@ -44,7 +44,7 @@ const options = [
   { label: 'Art Gobblers', value: 'artgobblers' },
 ]
 
-const Graph = ({ data }: any) => {
+const Graph = ({ data, slug }: any) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(200)
 
@@ -196,7 +196,11 @@ const Graph = ({ data }: any) => {
         onSelectionChange={setSelection}
         categories={[
           { key: 'floor', label: 'Floor', value: floorValue },
-          { key: 'twap4', label: 'Twap 4hrs', value: twap4Value },
+          {
+            key: 'twap4',
+            label: slug === 'artgobblers' ? 'Twap 1hr' : 'Twap 4hrs',
+            value: twap4Value,
+          },
         ]}
       />
     </div>
@@ -233,7 +237,7 @@ export const App = () => {
 
   const data = useMemo(() => {
     if (!floorsData) return null
-    const [, twap4] = processData(floorsData)
+    const [twap1, twap4] = processData(floorsData)
     const points = floorsData.map((e: OrgDataType) => [
       moment(e.timestamp).valueOf(),
       new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
@@ -249,14 +253,14 @@ export const App = () => {
       new TimeSeries({
         name: 'Sales',
         columns: ['time', 'twap4'],
-        points: twap4.map((e) => [
+        points: (slug === 'artgobblers' ? twap1 : twap4).map((e) => [
           moment(e.timestamp).valueOf(),
           new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
         ]),
       }),
       floorSeries.timerange(),
     ]
-  }, [floorsData])
+  }, [slug, floorsData])
 
   return (
     <div className='p-10'>
@@ -267,7 +271,7 @@ export const App = () => {
           value={selectedOption}
         />
       </div>
-      <Graph data={data} />
+      <Graph data={data} slug={slug} />
     </div>
   )
 }
