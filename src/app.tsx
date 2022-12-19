@@ -45,6 +45,10 @@ const options = [
   { label: 'The Saudis', value: 'thesaudis' },
   { label: 'GMX Blueberry Club', value: 'blueberry-club' },
   { label: 'PudgyPenguins', value: 'pudgypenguins' },
+  {
+    label: 'Trump Digital Trading Cards',
+    value: 'trump-digital-trading-cards',
+  },
 ]
 
 const Graph = ({ data, slug }: any) => {
