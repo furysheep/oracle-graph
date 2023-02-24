@@ -25,7 +25,8 @@ import { OrgDataType } from './types'
 
 const styles = styler([
   { key: 'floor', color: 'red', width: 1 },
-  { key: 'twap4', color: '#00f0ff', width: 1 },
+  { key: 'twap1', color: '#00ffff', width: 1 },
+  { key: 'twap4', color: '#ff00ff', width: 1 },
 ])
 
 const options = [
@@ -55,7 +56,7 @@ const Graph = ({ data, slug }: any) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(200)
 
-  const [floors, twaps4, initialTimeRange] = data ?? []
+  const [floors, twaps1, twaps4, initialTimeRange] = data ?? []
   const [timerange, setTimerange] = useState<any>(initialTimeRange)
 
   useEffect(() => {
@@ -102,12 +103,13 @@ const Graph = ({ data, slug }: any) => {
     setPos([x, y])
   }
 
-  let floorValue, twap4Value
+  let floorValue, twap1Value, twap4Value
 
   const f = format(',.2f')
 
   if (tracker) {
     floorValue = `${f(floors.at(floors.bisect(tracker)).get('floor'))}`
+    twap1Value = `${f(twaps1.at(twaps1.bisect(tracker)).get('twap1'))}`
     twap4Value = `${f(twaps4.at(twaps4.bisect(tracker)).get('twap4'))}`
   }
 
@@ -184,6 +186,17 @@ const Graph = ({ data, slug }: any) => {
                 onHighlightChange={setHighlight}
                 selection={selection}
                 onSelectionChange={setSelection}
+                columns={['twap1']}
+                series={twaps1}
+                style={styles}
+              />
+              <LineChart
+                interpolation='curveStepAfter'
+                axis='price'
+                highlight={highlight}
+                onHighlightChange={setHighlight}
+                selection={selection}
+                onSelectionChange={setSelection}
                 columns={['twap4']}
                 series={twaps4}
                 style={styles}
@@ -204,8 +217,13 @@ const Graph = ({ data, slug }: any) => {
         categories={[
           { key: 'floor', label: 'Floor', value: floorValue },
           {
+            key: 'twap1',
+            label: 'Twap 1hrs',
+            value: twap1Value,
+          },
+          {
             key: 'twap4',
-            label: slug === 'artgobblers' ? 'Twap 1hr' : 'Twap 4hrs',
+            label: 'Twap 4hrs',
             value: twap4Value,
           },
         ]}
@@ -259,8 +277,16 @@ export const App = () => {
       floorSeries,
       new TimeSeries({
         name: 'Sales',
+        columns: ['time', 'twap1'],
+        points: twap1.map((e) => [
+          moment(e.timestamp).valueOf(),
+          new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
+        ]),
+      }),
+      new TimeSeries({
+        name: 'Sales',
         columns: ['time', 'twap4'],
-        points: (slug === 'artgobblers' ? twap1 : twap4).map((e) => [
+        points: twap4.map((e) => [
           moment(e.timestamp).valueOf(),
           new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
         ]),
