@@ -293,7 +293,7 @@ export const App = () => {
       }),
       floorSeries.timerange(),
     ]
-  }, [slug, floorsData])
+  }, [floorsData])
 
   return (
     <div className='p-10'>
