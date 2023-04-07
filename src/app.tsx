@@ -25,7 +25,8 @@ import { OrgDataType } from './types'
 
 const styles = styler([
   { key: 'floor', color: 'red', width: 1 },
-  { key: 'twap4', color: '#00f0ff', width: 1 },
+  { key: 'twap1', color: '#00ffff', width: 1 },
+  { key: 'twap4', color: '#ff00ff', width: 1 },
 ])
 
 const options = [
@@ -36,7 +37,7 @@ const options = [
   { label: 'Azuki', value: 'azuki' },
   { label: 'Clonex', value: 'clonex' },
   { label: 'Otherdeed', value: 'otherdeed' },
-  { label: 'PPG', value: 'pudgypenguins' },
+  { label: 'PudgyPenguins', value: 'pudgypenguins' },
   {
     label: 'Trump Digital Trading Cards',
     value: 'trump-digital-trading-cards',
@@ -46,11 +47,11 @@ const options = [
   { label: 'degods', value: 'degods' },
 ]
 
-const Graph = ({ data }: any) => {
+const Graph = ({ data, slug }: any) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(200)
 
-  const [floors, twaps4, initialTimeRange] = data ?? []
+  const [floors, twaps1, twaps4, initialTimeRange] = data ?? []
   const [timerange, setTimerange] = useState<any>(initialTimeRange)
 
   useEffect(() => {
@@ -97,12 +98,13 @@ const Graph = ({ data }: any) => {
     setPos([x, y])
   }
 
-  let floorValue, twap4Value
+  let floorValue, twap1Value, twap4Value
 
   const f = format(',.2f')
 
   if (tracker) {
     floorValue = `${f(floors.at(floors.bisect(tracker)).get('floor'))}`
+    twap1Value = `${f(twaps1.at(twaps1.bisect(tracker)).get('twap1'))}`
     twap4Value = `${f(twaps4.at(twaps4.bisect(tracker)).get('twap4'))}`
   }
 
@@ -179,6 +181,17 @@ const Graph = ({ data }: any) => {
                 onHighlightChange={setHighlight}
                 selection={selection}
                 onSelectionChange={setSelection}
+                columns={['twap1']}
+                series={twaps1}
+                style={styles}
+              />
+              <LineChart
+                interpolation='curveStepAfter'
+                axis='price'
+                highlight={highlight}
+                onHighlightChange={setHighlight}
+                selection={selection}
+                onSelectionChange={setSelection}
                 columns={['twap4']}
                 series={twaps4}
                 style={styles}
@@ -198,7 +211,16 @@ const Graph = ({ data }: any) => {
         onSelectionChange={setSelection}
         categories={[
           { key: 'floor', label: 'Floor', value: floorValue },
-          { key: 'twap4', label: 'Twap 4hrs', value: twap4Value },
+          {
+            key: 'twap1',
+            label: 'Twap 1hrs',
+            value: twap1Value,
+          },
+          {
+            key: 'twap4',
+            label: 'Twap 4hrs',
+            value: twap4Value,
+          },
         ]}
       />
     </div>
@@ -235,7 +257,7 @@ export const App = () => {
 
   const data = useMemo(() => {
     if (!floorsData) return null
-    const [, twap4] = processData(floorsData)
+    const [twap1, twap4] = processData(floorsData)
     const points = floorsData.map((e: OrgDataType) => [
       moment(e.timestamp).valueOf(),
       new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
@@ -248,6 +270,14 @@ export const App = () => {
     })
     return [
       floorSeries,
+      new TimeSeries({
+        name: 'Sales',
+        columns: ['time', 'twap1'],
+        points: twap1.map((e) => [
+          moment(e.timestamp).valueOf(),
+          new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
+        ]),
+      }),
       new TimeSeries({
         name: 'Sales',
         columns: ['time', 'twap4'],
@@ -269,7 +299,7 @@ export const App = () => {
           value={selectedOption}
         />
       </div>
-      <Graph data={data} />
+      <Graph data={data} slug={slug} />
     </div>
   )
 }
