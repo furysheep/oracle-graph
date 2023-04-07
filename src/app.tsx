@@ -34,14 +34,16 @@ const options = [
   { label: 'Moonbirds', value: 'proof-moonbirds' },
   { label: 'Doodles', value: 'doodles-official' },
   { label: 'Azuki', value: 'azuki' },
-  { label: 'BAKC', value: 'bored-ape-kennel-club' },
-  { label: 'Chromie Squiggle', value: 'chromie-squiggle-by-snowfro' },
   { label: 'Clonex', value: 'clonex' },
-  { label: 'Cryptoadz', value: 'cryptoadz-by-gremplin' },
-  { label: 'Digidaigaku', value: 'digidaigaku' },
-  { label: 'Meebits', value: 'meebits' },
   { label: 'Otherdeed', value: 'otherdeed' },
-  { label: 'Artgobblers', value: 'artgobblers' },
+  { label: 'PPG', value: 'pudgypenguins' },
+  {
+    label: 'Trump Digital Trading Cards',
+    value: 'trump-digital-trading-cards',
+  },
+  { label: 'cryptodickbutts', value: 'cryptodickbutts-s3' },
+  { label: 'nakamigos', value: 'nakamigos' },
+  { label: 'degods', value: 'degods' },
 ]
 
 const Graph = ({ data }: any) => {
