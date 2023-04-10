@@ -45,6 +45,7 @@ const options = [
   { label: 'cryptodickbutts', value: 'cryptodickbutts-s3' },
   { label: 'nakamigos', value: 'nakamigos' },
   { label: 'degods', value: 'degods' },
+  { label: 'Bit Bears', value: 'berachain-bit-bears' },
 ]
 
 const Graph = ({ data, slug }: any) => {
