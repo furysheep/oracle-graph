@@ -26,7 +26,7 @@ import { OrgDataType } from './types'
 const styles = styler([
   { key: 'floor', color: 'red', width: 1 },
   { key: 'twap1', color: '#00ffff', width: 1 },
-  { key: 'twap4', color: '#ff00ff', width: 1 },
+  { key: 'pool', color: '#ffaf00', width: 1 },
 ])
 
 const options = [
@@ -46,13 +46,14 @@ const options = [
   { label: 'nakamigos', value: 'nakamigos' },
   { label: 'degods', value: 'degods' },
   { label: 'Bit Bears', value: 'berachain-bit-bears' },
+  { label: 'Milady', value: 'milady' },
 ]
 
 const Graph = ({ data, slug }: any) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(200)
 
-  const [floors, twaps1, twaps4, initialTimeRange] = data ?? []
+  const [floors, pool, twaps1, initialTimeRange] = data ?? []
   const [timerange, setTimerange] = useState<any>(initialTimeRange)
 
   useEffect(() => {
@@ -99,14 +100,14 @@ const Graph = ({ data, slug }: any) => {
     setPos([x, y])
   }
 
-  let floorValue, twap1Value, twap4Value
+  let floorValue, twap1Value, poolValue
 
   const f = format(',.2f')
 
   if (tracker) {
     floorValue = `${f(floors.at(floors.bisect(tracker)).get('floor'))}`
     twap1Value = `${f(twaps1.at(twaps1.bisect(tracker)).get('twap1'))}`
-    twap4Value = `${f(twaps4.at(twaps4.bisect(tracker)).get('twap4'))}`
+    poolValue = `${f(pool.at(pool.bisect(tracker)).get('pool'))}`
   }
 
   return (
@@ -171,17 +172,6 @@ const Graph = ({ data, slug }: any) => {
                 onHighlightChange={setHighlight}
                 selection={selection}
                 onSelectionChange={setSelection}
-                columns={['floor']}
-                series={floors}
-                style={styles}
-              />
-              <LineChart
-                interpolation='curveStepAfter'
-                axis='price'
-                highlight={highlight}
-                onHighlightChange={setHighlight}
-                selection={selection}
-                onSelectionChange={setSelection}
                 columns={['twap1']}
                 series={twaps1}
                 style={styles}
@@ -193,8 +183,8 @@ const Graph = ({ data, slug }: any) => {
                 onHighlightChange={setHighlight}
                 selection={selection}
                 onSelectionChange={setSelection}
-                columns={['twap4']}
-                series={twaps4}
+                columns={['pool']}
+                series={pool}
                 style={styles}
               />
               <CrossHairs x={pos[0]} y={pos[1]} />
@@ -218,9 +208,9 @@ const Graph = ({ data, slug }: any) => {
             value: twap1Value,
           },
           {
-            key: 'twap4',
-            label: 'Twap 4hrs',
-            value: twap4Value,
+            key: 'pool',
+            label: 'Pool twap',
+            value: poolValue,
           },
         ]}
       />
@@ -235,8 +225,9 @@ export const App = () => {
       label: string
     }>
   >(options[0])
-  const [slug, setSlug] = useState('boredapeyachtclub')
+  const [slug, setSlug] = useState('milady')
   const [floorsData, setFloorsData] = useState<OrgDataType[] | null>(null)
+  const [poolsData, setPoolsData] = useState<OrgDataType[] | null>(null)
   const handleChangeCollection = (
     newValue: SingleValue<{
       value: string
@@ -249,6 +240,14 @@ export const App = () => {
 
   useEffect(() => {
     setFloorsData(null)
+    setPoolsData(null)
+    fetch(
+      'https://nftperp-oracle.s3.eu-central-1.amazonaws.com/uni-milady-twaps.json',
+    )
+      .then((response) => response.json())
+      .then((floorsData) => {
+        setPoolsData(floorsData)
+      })
     fetch(`https://nftperp-oracle.s3.eu-central-1.amazonaws.com/${slug}.json`)
       .then((response) => response.json())
       .then((floorsData) => {
@@ -257,8 +256,8 @@ export const App = () => {
   }, [slug])
 
   const data = useMemo(() => {
-    if (!floorsData) return null
-    const [twap1, twap4] = processData(floorsData)
+    if (!floorsData || !poolsData) return null
+    const [twap1] = processData(floorsData)
     const points = floorsData.map((e: OrgDataType) => [
       moment(e.timestamp).valueOf(),
       new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
@@ -272,6 +271,14 @@ export const App = () => {
     return [
       floorSeries,
       new TimeSeries({
+        name: 'Pool',
+        columns: ['time', 'pool'],
+        points: poolsData.map((e) => [
+          moment(e.timestamp).valueOf(),
+          new BigNumber(e.value).div(new BigNumber(10).pow(18)).toNumber(),
+        ]),
+      }),
+      new TimeSeries({
         name: 'Sales',
         columns: ['time', 'twap1'],
         points: twap1.map((e) => [
@@ -279,27 +286,12 @@ export const App = () => {
           new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
         ]),
       }),
-      new TimeSeries({
-        name: 'Sales',
-        columns: ['time', 'twap4'],
-        points: twap4.map((e) => [
-          moment(e.timestamp).valueOf(),
-          new BigNumber(e.price).div(new BigNumber(10).pow(18)).toNumber(),
-        ]),
-      }),
       floorSeries.timerange(),
     ]
-  }, [floorsData])
+  }, [floorsData, poolsData])
 
   return (
     <div className='p-10'>
-      <div className='mb-4'>
-        <Select
-          options={options}
-          onChange={handleChangeCollection}
-          value={selectedOption}
-        />
-      </div>
       <Graph data={data} slug={slug} />
     </div>
   )
